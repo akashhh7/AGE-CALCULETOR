@@ -21,8 +21,13 @@ A collaborative project featuring a collection of Python-powered calculation too
 ### Phase 2: Standard Calculator
 - [x] create python script for standard calc - [@Eren](https://github.com/shuvamm939-glitch)
 - [x] created 3 page routes for home, calc, age calc - [@thunderzz](https://github.com/thunderzz12)
-<<<<<<< HEAD
-- [ ] design calc ui and integrate to existing flask web. also better age-calc ui - [@thunderzz](https://github.com/thunderzz12)
+<
+- [x] design calc ui and integrate to existing flask web. also better age-calc ui - [@thunderzz](https://github.com/thunderzz12)
+
+![alt text](ss/image-3.png)
+![alt text](ss/image-4.png)
+
+<<<<<< HEAD
 
 ### Phase 3: v2.0.1
 
@@ -55,9 +60,3 @@ A collaborative project featuring a collection of Python-powered calculation too
 ## Collaborators
 - [@Eren](https://github.com/shuvamm939-glitch)
 - [@thunderzz](https://github.com/thunderzz12)
-=======
-- [x] design calc ui and integrate to existing flask web. also better age-calc ui - [@thunderzz](https://github.com/thunderzz12)
-
-![alt text](ss/image-3.png)
-![alt text](ss/image-4.png)
->>>>>>> 4493e27889264d3b5e434b434aa7aca1ae11dabf
