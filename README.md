@@ -10,7 +10,7 @@ A collaborative project featuring a collection of Python-powered calculation too
 
 ## Roadmap
 
-### Phase 1: Age calculator
+### Phase 1: Age calculator (v1.0.0)
 - [x] build age calc py script - [@Eren](https://github.com/shuvamm939-glitch)
 - [x] design html/css ui for age calc and connect to flask website - [@thunderzz](https://github.com/thunderzz12)
 
@@ -18,18 +18,17 @@ A collaborative project featuring a collection of Python-powered calculation too
 
 (old phase 1 ui)
 
-### Phase 2: Standard Calculator
+### Phase 2: Standard Calculator (v2.0.0)
 - [x] create python script for standard calc - [@Eren](https://github.com/shuvamm939-glitch)
 - [x] created 3 page routes for home, calc, age calc - [@thunderzz](https://github.com/thunderzz12)
 <
 - [x] design calc ui and integrate to existing flask web. also better age-calc ui - [@thunderzz](https://github.com/thunderzz12)
 
-![alt text](ss/image-3.png)
+![alt text](ss/image-5.png)
 ![alt text](ss/image-4.png)
 
-<<<<<< HEAD
 
-### Phase 3: v2.0.1
+### Phase 3: v2.x.x
 
 **GitHub links**
 - [ ] add project repo link on home page
@@ -53,8 +52,11 @@ A collaborative project featuring a collection of Python-powered calculation too
 - [ ] fix bracket handling in calc script
 - [ ] test with cases like sin(5),sin 5
 
+
 ![image-2](ss/image-2.png)
 ![image-3](ss/image-3.png)
+
+
 (phase 3 bugs we gonna fix)
 
 ## Collaborators
