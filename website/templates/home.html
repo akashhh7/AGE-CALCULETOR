@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <h1>Python Calculator</h1>
+    <ul class="stack" aria-label="Tech stack">
+        <li>Python</li>
+        <li>Flask</li>
+        <li>HTML</li>
+        <li>CSS</li>
+    </ul>
+</section>
+
+<section class="choices">
+    <a class="choice age" href="{{ url_for('age_calculator') }}">
+        <div>
+            <h2>Age calculator</h2>
+        </div>
+        <div>
+            <div class="peek-age" aria-hidden="true">28<small>yrs</small>4<small>mo</small>12<small>d</small></div>
+            <span class="go">Open</span>
+        </div>
+    </a>
+
+    <a class="choice sci" href="{{ url_for('calculator') }}">
+        <div>
+            <h2>Scientific calculator</h2>
+        </div>
+        <div>
+            <div class="peek-keys" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <span class="go">Open</span>
+        </div>
+    </a>
+</section>
+{% endblock %}

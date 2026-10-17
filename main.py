@@ -1,15 +1,19 @@
 from flask import Flask, render_template, request
-from newage import calculate_age
+from scripts.age import calculate_age
 
 app = Flask(
     __name__,
     template_folder="website/templates",
     static_folder="website/static",
+    static_url_path="/website/static",
 )
 
+@app.route("/")
+def home():
+    return render_template("home.html")
 
-@app.route("/", methods=["GET", "POST"])
-def index():
+@app.route("/age-calculator", methods=["GET", "POST"])
+def age_calculator():
     result = None
     error = None
 
@@ -28,8 +32,11 @@ def index():
         except (ValueError, KeyError):
             error = "please select valid dates."
 
-    return render_template("index.html", result=result, error=error)
+    return render_template("age_calculator.html", result=result, error=error)
 
+@app.route("/calculator")
+def calculator():
+    return render_template("calc.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

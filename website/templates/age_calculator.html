@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Age Calculator{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1 class="age-title">Age calculator</h1>
+</div>
+
+<div class="device age-device">
+    <form class="fields" method="POST">
+        <div class="field">
+            <label for="birth_date">Birth date</label>
+            <input type="date" id="birth_date" name="birth_date" required
+                value="{{ request.form.get('birth_date', '') }}">
+        </div>
+
+        <div class="field">
+            <label for="present_date">Present date</label>
+            <input type="date" id="present_date" name="present_date" required
+                value="{{ request.form.get('present_date', '') }}">
+        </div>
+
+        <div class="btn-row">
+            <button class="btn" type="submit">Calculate</button>
+            <a class="btn quiet" href="{{ url_for('age_calculator') }}">Reset</a>
+        </div>
+    </form>
+
+    <div class="readout" aria-live="polite">
+        <p class="label">age:</p>
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% elif result %}
+        <div class="big-age">
+            <div><b>{{ result.years }}</b><span>years</span></div>
+            <div><b>{{ result.months }}</b><span>months</span></div>
+            <div><b>{{ result.days }}</b><span>days</span></div>
+        </div>
+        {% else %}
+        <div class="big-age empty">
+            <div><b>–</b><span>years</span></div>
+            <div><b>–</b><span>months</span></div>
+            <div><b>–</b><span>days</span></div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
