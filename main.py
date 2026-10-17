@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 from scripts.age import calculate_age
+from scripts import calc
 
 app = Flask(
     __name__,
@@ -36,7 +37,16 @@ def age_calculator():
 
 @app.route("/calculator")
 def calculator():
-    return render_template("calc.html")
+    return render_template(
+        "calc.html",
+        units=calc.unit_groups(),
+        percent_modes=calc.PERCENT_MODES,
+        base_modes=calc.BASE_MODES,
+        )
+
+@app.route("/api/calc", methods=["POST"])
+def api_calc():
+    return jsonify(calc.handle(request.get_json(silent=True)or{}))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,21 +1,3 @@
-"""
-XD CALCULATOR  
-A normal + scientific calculator that runs in the terminal.
-
-New in this version:
-  * Safe expression evaluator (no eval() -> no security hole)
-  * DEG / RAD mode for trigonometry
-  * 'ans' (last answer) and 'm' (memory value) can be used inside expressions
-  * Shortcuts: m+  m-  mc  mr   (like the M buttons on a real calculator)
-  * More functions: asin, acos, atan, sinh, cosh, tanh, exp, log2, cbrt,
-    floor, ceil, gcd, lcm, ncr, npr
-  * Implicit multiplication:  2pi  ->  2*pi     3(4+5)  ->  3*(4+5)
-  * Number base converter (binary / octal / hexadecimal)
-  * Unit converter now works in BOTH directions and uses a table
-    (37 if/elif blocks became one small function)
-  * Better error messages and no crashes on wrong input
-"""
-
 import ast
 import math
 import operator
@@ -24,21 +6,16 @@ import re
 import statistics
 
 HISTORY_FILE = "calculator_history.txt"
-history = []          # list of strings like "5+3 = 8"
-memory = 0            # Real calculator's M button
-last_answer = 0       # the "ans" button
-angle_mode = "DEG"    # "DEG" or "RAD"
-
-
-#____________XD CALCULATOR____________________
+history = []
+memory = 0
+last_answer = 0
+angle_mode = "DEG"
 
 
 class CalcError(Exception):
-    """Our own error type. It carries a message we can show to the user."""
-
+    """An error msg"""
 
 def ask_float(prompt):
-    """Keep asking until the user types a valid number."""
     while True:
         try:
             return float(input(prompt))
@@ -47,7 +24,6 @@ def ask_float(prompt):
 
 
 def ask_int(prompt, minimum=None):
-    """Keep asking until the user types a whole number."""
     while True:
         try:
             value = int(input(prompt))
@@ -61,7 +37,6 @@ def ask_int(prompt, minimum=None):
 
 
 def format_number(x):
-    """Show 8.0 as 8 and 0.30000000000000004 as 0.3."""
     if isinstance(x, float):
         if math.isnan(x) or math.isinf(x):
             return str(x)
@@ -71,45 +46,39 @@ def format_number(x):
     return str(x)
 
 
-#-----------------SCIENTIFIC FUNCTIONS-----------------
+def number(value):
+    try:
+        x = float(value)
+    except (TypeError, ValueError):
+        raise CalcError("Please enter a valid number.")
+    if not math.isfinite(x):
+        raise CalcError("Please enter a valid number.")
+    return x
 
-def to_radians(x):
-    return math.radians(x) if angle_mode == "DEG" else x
-
-
-def from_radians(x):
-    return math.degrees(x) if angle_mode == "DEG" else x
 
 
 def clean(x):
-    """Remove tiny rounding noise, e.g. sin(180) = 1.2e-16 -> 0."""
     return round(x, 12) + 0.0
 
 
-def sin(x):
-    return clean(math.sin(to_radians(x)))
+def trig_functions(mode):
+    deg = mode == "DEG"
+    to_rad = math.radians if deg else (lambda x: x)
+    from_rad = math.degrees if deg else (lambda x: x)
 
+    def tan(x):
+        if deg and x % 180 == 90:
+            raise ValueError("tan is undefined here")
+        return clean(math.tan(to_rad(x)))
 
-def cos(x):
-    return clean(math.cos(to_radians(x)))
-
-
-def tan(x):
-    if angle_mode == "DEG" and x % 180 == 90:
-        raise ValueError("tan is undefined here")
-    return clean(math.tan(to_radians(x)))
-
-
-def asin(x):
-    return clean(from_radians(math.asin(x)))
-
-
-def acos(x):
-    return clean(from_radians(math.acos(x)))
-
-
-def atan(x):
-    return clean(from_radians(math.atan(x)))
+    return {
+        "sin": lambda x: clean(math.sin(to_rad(x))),
+        "cos": lambda x: clean(math.cos(to_rad(x))),
+        "tan": tan,
+        "asin": lambda x: clean(from_rad(math.asin(x))),
+        "acos": lambda x: clean(from_rad(math.acos(x))),
+        "atan": lambda x: clean(from_rad(math.atan(x))),
+    }
 
 
 def factorial(x):
@@ -119,20 +88,10 @@ def factorial(x):
 
 
 def cbrt(x):
-    """Cube root that also works for negative numbers."""
     return math.copysign(abs(x) ** (1 / 3), x)
 
 
-def ncr(n, r):
-    return math.comb(int(n), int(r))
-
-
-def npr(n, r):
-    return math.perm(int(n), int(r))
-
-
 def safe_power(a, b):
-    """Stop things like 9**9**9 which would freeze the computer."""
     if abs(b) > 1000:
         raise OverflowError("exponent too large")
     return a ** b
@@ -140,13 +99,12 @@ def safe_power(a, b):
 
 FUNCTIONS = {
     "sqrt": math.sqrt, "cbrt": cbrt, "pow": safe_power,
-    "sin": sin, "cos": cos, "tan": tan,
-    "asin": asin, "acos": acos, "atan": atan,
     "sinh": math.sinh, "cosh": math.cosh, "tanh": math.tanh,
     "log": math.log10, "log2": math.log2, "ln": math.log, "exp": math.exp,
     "abs": abs, "round": round, "floor": math.floor, "ceil": math.ceil,
-    "fact": factorial, "ncr": ncr, "npr": npr,
-    "gcd": math.gcd, "lcm": math.lcm,
+    "fact": factorial, "gcd": math.gcd, "lcm": math.lcm,
+    "ncr": lambda n, r: math.comb(int(n), int(r)),
+    "npr": lambda n, r: math.perm(int(n), int(r)),
 }
 
 OPERATORS = {
@@ -158,13 +116,11 @@ OPERATORS = {
 }
 
 
-       #  SAFE EVALUATOR
-       #  Python's eval() can run ANY code, so we read the expression as a
-       #  tree (ast) and only allow numbers, + - * / etc. and our functions.
+# exp eval
 
-def evaluate(node, names):
+def evaluate(node, names, funcs):
     if isinstance(node, ast.Expression):
-        return evaluate(node.body, names)
+        return evaluate(node.body, names, funcs)
 
     if isinstance(node, ast.Constant):
         if type(node.value) in (int, float):
@@ -172,12 +128,12 @@ def evaluate(node, names):
         raise CalcError("Invalid expression")
 
     if isinstance(node, ast.BinOp) and type(node.op) in OPERATORS:
-        left = evaluate(node.left, names)
-        right = evaluate(node.right, names)
+        left = evaluate(node.left, names, funcs)
+        right = evaluate(node.right, names, funcs)
         return OPERATORS[type(node.op)](left, right)
 
     if isinstance(node, ast.UnaryOp) and type(node.op) in OPERATORS:
-        return OPERATORS[type(node.op)](evaluate(node.operand, names))
+        return OPERATORS[type(node.op)](evaluate(node.operand, names, funcs))
 
     if isinstance(node, ast.Name):
         if node.id in names:
@@ -185,31 +141,29 @@ def evaluate(node, names):
         raise CalcError(f"Unknown name: {node.id}")
 
     if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
-            and node.func.id in FUNCTIONS and not node.keywords):
-        args = [evaluate(arg, names) for arg in node.args]
-        return FUNCTIONS[node.func.id](*args)
+            and node.func.id in funcs and not node.keywords):
+        args = [evaluate(arg, names, funcs) for arg in node.args]
+        return funcs[node.func.id](*args)
 
     raise CalcError("Invalid expression")
 
 
 def prepare(expression):
-    """Turn what the user typed into something Python can read."""
     expression = expression.lower()
     expression = expression.replace("^", "**").replace("×", "*").replace("÷", "/")
-    # 2pi -> 2*pi , 3(4) -> 3*(4) , (2)(3) -> (2)*(3)
+    # implicit multiplication: 2pi, 3(4), (2)(3)
     expression = re.sub(r"(\d|\))\s*(?=[a-df-z(])", r"\1*", expression)
     expression = re.sub(r"(\))\s*(?=\d)", r"\1*", expression)
     return expression
 
 
-def calculate(expression):
-    """Calculate an expression typed by the user. Returns a number."""
-    global last_answer
-    names = {"pi": math.pi, "e": math.e, "ans": last_answer, "m": memory}
+def calculate(expression, mode="DEG", ans=0, mem=0):
+    names = {"pi": math.pi, "e": math.e, "ans": ans, "m": mem}
+    funcs = {**FUNCTIONS, **trig_functions(mode)}
 
     try:
         tree = ast.parse(prepare(expression), mode="eval")
-        result = evaluate(tree, names)
+        result = evaluate(tree, names, funcs)
     except ZeroDivisionError:
         raise CalcError("Cannot divide by zero")
     except OverflowError:
@@ -221,68 +175,86 @@ def calculate(expression):
     except RecursionError:
         raise CalcError("Expression is too long")
 
-    last_answer = result
+    if isinstance(result, complex):
+        raise CalcError("Math error (result is not a real number)")
     return result
 
 
-#---------------------------PERCENTAGE----------------------------------
+# percentage
+
+PERCENT_MODES = [
+    "X% of Y",
+    "X is what % of Y",
+    "Increase X by Y%",
+    "Decrease X by Y%",
+    "Percentage change from X to Y",
+]
+
+
+def percentage(kind, x, y):
+    if kind == 1:
+        return format_number(x * y / 100)
+    if kind == 2:
+        if y == 0:
+            raise CalcError("Y cannot be zero.")
+        return format_number(x / y * 100) + "%"
+    if kind == 3:
+        return format_number(x + x * y / 100)
+    if kind == 4:
+        return format_number(x - x * y / 100)
+    if kind == 5:
+        if x == 0:
+            raise CalcError("X cannot be zero.")
+        return format_number((y - x) / x * 100) + "%"
+    raise CalcError("Invalid choice")
+
 
 def percentage_menu():
-    print("\n1. X% of Y")
-    print("2. X is what % of Y")
-    print("3. Increase X by Y%")
-    print("4. Decrease X by Y%")
-    print("5. Percentage change from X to Y")
+    print()
+    for i, label in enumerate(PERCENT_MODES, 1):
+        print(f"{i}. {label}")
     choice = input("Enter your choice (1-5): ").strip()
-
     if choice not in ("1", "2", "3", "4", "5"):
         print("Invalid choice")
         return
 
     x = ask_float("Enter X: ")
     y = ask_float("Enter Y: ")
-
-    if choice == "1":
-        print(f"Result = {format_number(x * y / 100)}")
-    elif choice == "2":
-        if y == 0:
-            print("Y cannot be zero.")
-        else:
-            print(f"Result = {format_number(x / y * 100)}%")
-    elif choice == "3":
-        print(f"Result = {format_number(x + x * y / 100)}")
-    elif choice == "4":
-        print(f"Result = {format_number(x - x * y / 100)}")
-    elif choice == "5":
-        if x == 0:
-            print("X cannot be zero.")
-        else:
-            print(f"Change = {format_number((y - x) / x * 100)}%")
+    try:
+        print(f"Result = {percentage(int(choice), x, y)}")
+    except CalcError as error:
+        print(error)
 
 
-#---------------------------STATISTICS---------------------------------
+# stats
+
+def stats_summary(nums):
+    if not nums:
+        raise CalcError("Enter at least one number.")
+    rows = [
+        ("Sum", sum(nums)),
+        ("Average", sum(nums) / len(nums)),
+        ("Median", statistics.median(nums)),
+        ("Maximum", max(nums)),
+        ("Minimum", min(nums)),
+        ("Range", max(nums) - min(nums)),
+        ("Std dev (population)", statistics.pstdev(nums)),
+    ]
+    if len(nums) > 1:
+        rows.append(("Std dev (sample)", statistics.stdev(nums)))
+    return [(label, format_number(value)) for label, value in rows]
+
 
 def stats_menu():
     n = ask_int("How many numbers? ", minimum=1)
     nums = [ask_float(f"Enter number {i + 1}: ") for i in range(n)]
-
-    print(f"Sum      = {format_number(sum(nums))}")
-    print(f"Average  = {format_number(sum(nums) / n)}")
-    print(f"Median   = {format_number(statistics.median(nums))}")
-    print(f"Maximum  = {format_number(max(nums))}")
-    print(f"Minimum  = {format_number(min(nums))}")
-    print(f"Range    = {format_number(max(nums) - min(nums))}")
-    print(f"Std dev (population) = {format_number(statistics.pstdev(nums))}")
-    if n > 1:
-        print(f"Std dev (sample)     = {format_number(statistics.stdev(nums))}")
+    for label, value in stats_summary(nums):
+        print(f"{label:<22} = {value}")
 
 
-#  UNIT CONVERTER
-#  Each row: (category, unit A, unit B, function A->B, function B->A)
-#  Because we store both directions, every "↔" really works both ways.
+# unit converter
 
 def factor(f):
-    """Make a pair of functions for simple 'multiply by a number' units."""
     return (lambda x: x * f), (lambda x: x / f)
 
 
@@ -331,56 +303,95 @@ CONVERSIONS = [
 ]
 
 
+def convert_units(index, direction, value):
+    if not 0 <= index < len(CONVERSIONS):
+        raise CalcError("Unknown conversion.")
+    _, a, b, a_to_b, b_to_a = CONVERSIONS[index]
+    if direction == 1:
+        return f"{format_number(value)} {a} = {format_number(a_to_b(value))} {b}"
+    if direction == 2:
+        return f"{format_number(value)} {b} = {format_number(b_to_a(value))} {a}"
+    raise CalcError("Invalid direction.")
+
+
+def unit_groups():
+    groups = {}
+    for i, (category, a, b, _, _) in enumerate(CONVERSIONS):
+        groups.setdefault(category, []).extend(
+            [(f"{i}:1", f"{a} → {b}"), (f"{i}:2", f"{b} → {a}")]
+        )
+    return groups
+
+
 def unit_converter():
     print()
-    for number, (category, a, b, _, _) in enumerate(CONVERSIONS, 1):
-        print(f"{number:>2}. {category} ({a} ↔ {b})")
+    for n, (category, a, b, _, _) in enumerate(CONVERSIONS, 1):
+        print(f"{n:>2}. {category} ({a} ↔ {b})")
 
     choice = ask_int(f"Enter your choice (1-{len(CONVERSIONS)}): ", minimum=1)
     if choice > len(CONVERSIONS):
         print(f"Invalid choice! Please enter a number from 1 to {len(CONVERSIONS)}.")
         return
 
-    category, a, b, a_to_b, b_to_a = CONVERSIONS[choice - 1]
+    _, a, b, _, _ = CONVERSIONS[choice - 1]
     print(f"1. {a} → {b}")
     print(f"2. {b} → {a}")
     direction = input("Direction (1 or 2): ").strip()
-
-    if direction == "1":
-        value = ask_float(f"Enter value in {a}: ")
-        print(f"{format_number(value)} {a} = {format_number(a_to_b(value))} {b}")
-    elif direction == "2":
-        value = ask_float(f"Enter value in {b}: ")
-        print(f"{format_number(value)} {b} = {format_number(b_to_a(value))} {a}")
-    else:
+    if direction not in ("1", "2"):
         print("Invalid direction.")
+        return
+
+    source = a if direction == "1" else b
+    value = ask_float(f"Enter value in {source}: ")
+    print(convert_units(choice - 1, int(direction), value))
 
 
-#------------------------NUMBER BASE CONVERTER----------------------------
+# bases
+
+BASE_MODES = [
+    "Decimal → Binary / Octal / Hex",
+    "Binary → Decimal",
+    "Octal → Decimal",
+    "Hex → Decimal",
+]
+
+
+def convert_base(kind, text):
+    try:
+        if kind == 1:
+            n = int(text)
+            sign = "-" if n < 0 else ""
+            n = abs(n)
+            return [("Binary", sign + bin(n)[2:]),
+                    ("Octal", sign + oct(n)[2:]),
+                    ("Hex", sign + hex(n)[2:].upper())]
+        base = {2: 2, 3: 8, 4: 16}[kind]
+        return [("Decimal", str(int(text.strip(), base)))]
+    except (ValueError, KeyError):
+        raise CalcError("That is not a valid number for this base.")
+
 
 def base_menu():
-    print("\n1. Decimal → Binary / Octal / Hex")
-    print("2. Binary  → Decimal")
-    print("3. Octal   → Decimal")
-    print("4. Hex     → Decimal")
+    print()
+    for i, label in enumerate(BASE_MODES, 1):
+        print(f"{i}. {label}")
     choice = input("Enter your choice (1-4): ").strip()
+    if choice not in ("1", "2", "3", "4"):
+        print("Invalid choice")
+        return
 
+    if choice == "1":
+        text = str(ask_int("Enter a whole number: "))
+    else:
+        text = input("Enter the number: ").strip()
     try:
-        if choice == "1":
-            n = ask_int("Enter a whole number: ")
-            print(f"Binary = {bin(n)[2:] if n >= 0 else '-' + bin(n)[3:]}")
-            print(f"Octal  = {oct(n)[2:] if n >= 0 else '-' + oct(n)[3:]}")
-            print(f"Hex    = {hex(n)[2:].upper() if n >= 0 else '-' + hex(n)[3:].upper()}")
-        elif choice in ("2", "3", "4"):
-            base = {"2": 2, "3": 8, "4": 16}[choice]
-            text = input("Enter the number: ").strip()
-            print(f"Decimal = {int(text, base)}")
-        else:
-            print("Invalid choice")
-    except ValueError:
-        print("That is not a valid number for this base.")
+        for label, value in convert_base(int(choice), text):
+            print(f"{label:<7} = {value}")
+    except CalcError as error:
+        print(error)
 
-#-----------------MEMORY  (M+ M- MC MR)----------------------
+
+# memory (m)
 
 def memory_add(value):
     global memory
@@ -410,16 +421,16 @@ def memory_menu():
         print("Invalid choice! Please enter a number from 1 to 4.")
 
 
-#------------------HISTORY----------------------
+# history for terminal
 
 def show_history():
     if not history:
         print("No history available.")
         return
-    print("\n---History---")
+    print("\n--- History ---")
     for i, item in enumerate(history, 1):
         print(f"{i}. {item}")
-    print("_____________")
+    print("---------------")
 
 
 def save_history():
@@ -445,7 +456,50 @@ def clear_history():
     history = []
     print("History cleared (not yet saved to file).")
 
-#---------------------MAIN MENU----------------------------
+
+# flask entry
+
+def handle(data):
+    # json sendig here
+    op = data.get("op")
+    try:
+        if op == "expr":
+            mode = "RAD" if data.get("mode") == "RAD" else "DEG"
+            result = calculate(str(data.get("expression", "")), mode,
+                               number(data.get("ans") or 0),
+                               number(data.get("memory") or 0))
+            try:
+                value = float(result)
+            except OverflowError:
+                value = 0
+            return {"ok": True, "text": format_number(result), "value": value}
+
+        if op == "percent":
+            text = percentage(int(data["kind"]), number(data["x"]), number(data["y"]))
+            return {"ok": True, "lines": [["Result", text]]}
+
+        if op == "stats":
+            parts = re.split(r"[,\s]+", str(data.get("numbers", "")).strip())
+            nums = [number(p) for p in parts if p]
+            return {"ok": True, "lines": stats_summary(nums)}
+
+        if op == "convert":
+            index, direction = map(int, str(data["unit"]).split(":"))
+            text = convert_units(index, direction, number(data["value"]))
+            return {"ok": True, "lines": [["Result", text]]}
+
+        if op == "base":
+            lines = convert_base(int(data["kind"]), str(data["value"]))
+            return {"ok": True, "lines": lines}
+
+        return {"ok": False, "error": "Unknown request."}
+    except CalcError as error:
+        return {"ok": False, "error": str(error)}
+    except (KeyError, ValueError, TypeError):
+        return {"ok": False, "error": "Please check your input."}
+
+
+# terminal only
 
 def print_menu():
     print("\n============XD CALCULATOR============")
@@ -458,7 +512,7 @@ def print_menu():
     print(" Commands  :")
     print("   percent  -> percentage calculations")
     print("   stats    -> sum / average / median / std dev of many numbers")
-    print("   convert  -> unit conversions (37 types)")
+    print(f"   convert  -> unit conversions ({len(CONVERSIONS)} types)")
     print("   base     -> binary / octal / hex converter")
     print("   memory   -> memory menu      m+ m- mc mr -> quick memory keys")
     print("   history  -> show history     save / load / clear")
@@ -473,7 +527,7 @@ def toggle_angle_mode():
 
 
 def calculator():
-    global memory
+    global memory, last_answer
     load_history()
     print_menu()
 
@@ -523,14 +577,15 @@ def calculator():
             clear_history()
         else:
             try:
-                result = format_number(calculate(user_input))
+                value = calculate(user_input, angle_mode, last_answer, memory)
             except CalcError as error:
                 print(f"Error: {error}")
             else:
+                last_answer = value
+                result = format_number(value)
                 print(f"Result: {result}")
                 history.append(f"{user_input} = {result}")
 
 
 if __name__ == "__main__":
     calculator()
-    

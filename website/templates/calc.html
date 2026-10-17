@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}Scientific Calculator{% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <h1>Scientific calculator</h1>
+</div>
+
+<div class="sci-layout">
+
+    <div class="device sci-device">
+        <div class="screen">
+            <div class="meta">
+                <button class="mode" id="mode" type="button" title="Switch between degrees and radians">DEG</button>
+                <span id="memflag"></span>
+            </div>
+            <input class="expr" id="expr" type="text" autocomplete="off" spellcheck="false"
+                placeholder="e.g. 2pi + sin(30)" aria-label="Expression">
+            <div class="result" id="result" aria-live="polite">0</div>
+        </div>
+
+        <div class="keys mem">
+            <button class="key fn small" type="button" data-act="mc">MC</button>
+            <button class="key fn small" type="button" data-act="mr">MR</button>
+            <button class="key fn small" type="button" data-act="mplus">M+</button>
+            <button class="key fn small" type="button" data-act="mminus">M−</button>
+            <select class="key fn small" id="more" aria-label="More functions">
+                <option value="" selected disabled>More</option>
+                <optgroup label="Inverse trig">
+                    <option>asin</option><option>acos</option><option>atan</option>
+                </optgroup>
+                <optgroup label="Hyperbolic">
+                    <option>sinh</option><option>cosh</option><option>tanh</option>
+                </optgroup>
+                <optgroup label="Powers and logs">
+                    <option>cbrt</option><option>exp</option><option>log2</option>
+                </optgroup>
+                <optgroup label="Rounding">
+                    <option>round</option><option>floor</option><option>ceil</option>
+                </optgroup>
+                <optgroup label="Counting">
+                    <option>ncr</option><option>npr</option><option>gcd</option><option>lcm</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="keys fns">
+            <button class="key fn" type="button" data-key="sin(">sin</button>
+            <button class="key fn" type="button" data-key="cos(">cos</button>
+            <button class="key fn" type="button" data-key="tan(">tan</button>
+            <button class="key fn" type="button" data-key="ln(">ln</button>
+            <button class="key fn" type="button" data-key="log(">log</button>
+
+            <button class="key fn" type="button" data-key="sqrt(">√</button>
+            <button class="key fn" type="button" data-key="^2" data-op>x²</button>
+            <button class="key fn" type="button" data-key="^" data-op>xʸ</button>
+            <button class="key fn" type="button" data-key="fact(">n!</button>
+            <button class="key fn" type="button" data-key="abs(">|x|</button>
+
+            <button class="key fn" type="button" data-key="pi">π</button>
+            <button class="key fn" type="button" data-key="e">e</button>
+            <button class="key fn" type="button" data-key="(">(</button>
+            <button class="key fn" type="button" data-key=")">)</button>
+            <button class="key fn" type="button" data-key="ans">ans</button>
+        </div>
+
+        <div class="keys pad">
+            <button class="key clear" type="button" data-act="clear">AC</button>
+            <button class="key op" type="button" data-act="delete" aria-label="Delete">⌫</button>
+            <button class="key op" type="button" data-key=" % " data-op title="Remainder">mod</button>
+            <button class="key op" type="button" data-key="/" data-op aria-label="Divide">÷</button>
+
+            <button class="key num" type="button" data-key="7">7</button>
+            <button class="key num" type="button" data-key="8">8</button>
+            <button class="key num" type="button" data-key="9">9</button>
+            <button class="key op" type="button" data-key="*" data-op aria-label="Multiply">×</button>
+
+            <button class="key num" type="button" data-key="4">4</button>
+            <button class="key num" type="button" data-key="5">5</button>
+            <button class="key num" type="button" data-key="6">6</button>
+            <button class="key op" type="button" data-key="-" data-op aria-label="Subtract">−</button>
+
+            <button class="key num" type="button" data-key="1">1</button>
+            <button class="key num" type="button" data-key="2">2</button>
+            <button class="key num" type="button" data-key="3">3</button>
+            <button class="key op" type="button" data-key="+" data-op aria-label="Add">+</button>
+
+            <button class="key num" type="button" data-key="," aria-label="Comma">,</button>
+            <button class="key num" type="button" data-key="0">0</button>
+            <button class="key num" type="button" data-key="." aria-label="Decimal point">.</button>
+            <button class="key eq" type="button" data-act="equals" aria-label="Equals">=</button>
+        </div>
+    </div>
+
+    <div class="side">
+        <div class="device tools">
+            <div class="field">
+                <label for="tool">More tools</label>
+                <select id="tool">
+                    <option value="percent">Percentages</option>
+                    <option value="stats">Statistics</option>
+                    <option value="convert">Unit converter</option>
+                    <option value="base">Number bases</option>
+                </select>
+            </div>
+
+            <form class="tool-form" data-tool="percent">
+                <div class="field">
+                    <label for="p-kind">Calculation</label>
+                    <select id="p-kind" name="kind">
+                        {% for label in percent_modes %}
+                        <option value="{{ loop.index }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="pair">
+                    <div class="field"><label for="p-x">X</label><input id="p-x" name="x" type="number" step="any" required></div>
+                    <div class="field"><label for="p-y">Y</label><input id="p-y" name="y" type="number" step="any" required></div>
+                </div>
+                <button class="btn" type="submit">Calculate</button>
+                <div class="tool-out"></div>
+            </form>
+
+            <form class="tool-form" data-tool="stats" hidden>
+                <div class="field">
+                    <label for="s-nums">Numbers</label>
+                    <textarea id="s-nums" name="numbers" rows="3" placeholder="4, 8, 15, 16, 23, 42" required></textarea>
+                </div>
+                <button class="btn" type="submit">Summarise</button>
+                <div class="tool-out"></div>
+            </form>
+
+            <form class="tool-form" data-tool="convert" hidden>
+                <div class="field">
+                    <label for="c-unit">Convert</label>
+                    <select id="c-unit" name="unit">
+                        {% for category, options in units.items() %}
+                        <optgroup label="{{ category }}">
+                            {% for value, label in options %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="c-val">Value</label>
+                    <input id="c-val" name="value" type="number" step="any" required>
+                </div>
+                <button class="btn" type="submit">Convert</button>
+                <div class="tool-out"></div>
+            </form>
+
+            <form class="tool-form" data-tool="base" hidden>
+                <div class="field">
+                    <label for="b-kind">Conversion</label>
+                    <select id="b-kind" name="kind">
+                        {% for label in base_modes %}
+                        <option value="{{ loop.index }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="b-val">Number</label>
+                    <input id="b-val" name="value" type="text" autocomplete="off" spellcheck="false" required>
+                </div>
+                <button class="btn" type="submit">Convert</button>
+                <div class="tool-out"></div>
+            </form>
+        </div>
+
+        <div class="device history">
+            <div class="history-head">
+                <h2>History</h2>
+                <button class="link-btn" id="clear-history" type="button">Clear</button>
+            </div>
+            <ol id="history"></ol>
+            <p class="history-empty" id="history-empty">Nothing yet.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const $ = (id) => document.getElementById(id);
+    const expr = $("expr"), out = $("result");
+    let mode = "DEG", ans = 0, memory = 0, solved = false;
+
+    const post = (body) =>
+        fetch("/api/calc", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        })
+            .then((r) => r.json())
+            .catch(() => ({ ok: false, error: "Could not reach the server." }));
+
+    const show = (text, isError) => {
+        out.textContent = text;
+        out.classList.toggle("err", Boolean(isError));
+    };
+
+    const insert = (text, isOp) => {
+        if (solved) {
+            expr.value = isOp ? "ans" : "";
+            solved = false;
+        }
+        expr.value += text;
+    };
+
+    const showMemory = () => {
+        $("memflag").textContent = memory ? "M = " + Number(memory.toPrecision(10)) : "";
+    };
+
+    const addHistory = (text, result) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerHTML = "<span></span><b></b>";
+        btn.children[0].textContent = text;
+        btn.children[1].textContent = result;
+        btn.addEventListener("click", () => { expr.value = text; solved = false; });
+        li.append(btn);
+        $("history").prepend(li);
+        while ($("history").children.length > 30) $("history").lastChild.remove();
+        $("history-empty").hidden = true;
+    };
+
+    const solve = async () => {
+        const text = expr.value.trim();
+        if (!text) return;
+        const r = await post({ op: "expr", expression: text, mode, ans, memory });
+        if (!r.ok) return show(r.error, true);
+        show(r.text);
+        ans = r.value;
+        solved = true;
+        addHistory(text, r.text);
+    };
+
+    const actions = {
+        clear: () => { expr.value = ""; solved = false; show("0"); },
+        delete: () => { expr.value = expr.value.slice(0, -1); },
+        equals: solve,
+        mc: () => { memory = 0; showMemory(); },
+        mr: () => insert("m"),
+        mplus: () => { memory += ans; showMemory(); },
+        mminus: () => { memory -= ans; showMemory(); },
+    };
+
+    document.querySelectorAll(".keys .key").forEach((key) =>
+        key.addEventListener("click", () => {
+            if (key.dataset.act) actions[key.dataset.act]();
+            else insert(key.dataset.key, key.hasAttribute("data-op"));
+        })
+    );
+
+    expr.addEventListener("keydown", (e) => { if (e.key === "Enter") solve(); });
+    expr.addEventListener("input", () => { solved = false; });
+
+    $("mode").addEventListener("click", (e) => {
+        mode = mode === "DEG" ? "RAD" : "DEG";
+        e.currentTarget.textContent = mode;
+    });
+
+    $("more").addEventListener("change", (e) => {
+        insert(e.target.value + "(");
+        e.target.selectedIndex = 0;
+    });
+
+    $("clear-history").addEventListener("click", () => {
+        $("history").innerHTML = "";
+        $("history-empty").hidden = false;
+    });
+
+    const forms = document.querySelectorAll("form[data-tool]");
+    $("tool").addEventListener("change", (e) =>
+        forms.forEach((f) => { f.hidden = f.dataset.tool !== e.target.value; })
+    );
+
+    forms.forEach((form) =>
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const body = Object.fromEntries(new FormData(form));
+            body.op = form.dataset.tool;
+            const r = await post(body);
+            const box = form.querySelector(".tool-out");
+            box.replaceChildren();
+            box.classList.toggle("err", !r.ok);
+            if (!r.ok) { box.textContent = r.error; return; }
+            r.lines.forEach(([label, value]) => {
+                const row = document.createElement("div");
+                row.innerHTML = "<span></span><b></b>";
+                row.children[0].textContent = label;
+                row.children[1].textContent = value;
+                box.append(row);
+            });
+        })
+    );
+})();
+</script>
+{% endblock %}
