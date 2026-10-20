@@ -38,7 +38,8 @@ A collaborative project featuring a collection of Python-powered calculation too
 - [x] design changelog page ui
 - [x] add changelog link in navbar
 
-*done in v2.3.0*
+*done in v2.3.0 by [@anuj](https://github.com/thunderzz12)* -
+*idea for ui inspired by [this](https://learnspace-app.vercel.app/changelog)*
 
 ![alt text](ss/image-6.png)
 
