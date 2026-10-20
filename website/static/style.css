@@ -285,6 +285,7 @@ input {
     grid-template-columns: 1fr 1.15fr;
     gap: 22px;
     max-width: 880px;
+    margin: 15px auto 0;
 }
 
 .fields {
@@ -416,6 +417,9 @@ input {
 
 /* sci calc */
 
+.calc-title {
+    text-align: center;
+}
 
 [hidden] {
     display: none !important;
@@ -426,6 +430,7 @@ input {
     grid-template-columns: minmax(0, 500px) minmax(0, 1fr);
     gap: 22px;
     align-items: start;
+    margin: 15px auto 0;
 }
 
 .side {
