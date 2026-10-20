@@ -1,0 +1,55 @@
+const fs = require('fs');
+const path = require('path');
+const filePath = path.join(__dirname, '../../../website/static/changelog.js');
+
+try {
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+
+
+    const arrayMatch = fileContent.match(/const\s+releases\s*=\s*(\[\s*\{[\s\S]*?\}\s*\]);/);
+    if (!arrayMatch) {
+        process.exit(1);
+    }
+
+    const releases = eval(arrayMatch[1]);
+    if (!releases || releases.length === 0) {
+        process.exit(1);
+    }
+
+    const latest = releases[0];
+    const formatType = (type) => type.charAt(0).toUpperCase() + type.slice(1);
+
+
+    let markdown = `# ${latest.version} - ${latest.name}\n\n`;
+    if (latest.summary) {
+        markdown += `${latest.summary}\n\n`;
+    }
+
+    markdown += `### Changes\n`;
+    latest.changes.forEach(change => {
+        markdown += `* **[${formatType(change.type)}]** ${change.text}\n`;
+    });
+
+
+    if (releases.length > 1) {
+        markdown += `\n---\n\n<details>\n<summary>Older releases</summary>\n\n`;
+
+        for (let i = 1; i < releases.length; i++) {
+            const old = releases[i];
+            markdown += `### ${old.version} - ${old.name}\n`;
+            old.changes.forEach(change => {
+                markdown += `* **[${formatType(change.type)}]** ${change.text}\n`;
+            });
+            markdown += `\n`;
+        }
+
+        markdown += `</details>\n`;
+    }
+
+
+    fs.writeFileSync('RELEASE_NOTES.md', markdown);
+
+} catch (error) {
+    console.error("error", error);
+    process.exit(1);
+}
