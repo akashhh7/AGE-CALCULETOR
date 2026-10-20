@@ -34,9 +34,13 @@ A collaborative project featuring a collection of Python-powered calculation too
 - [ ] add github links of both collaborators in home page
 
 **Changelog page**
-- [ ] create /changelog route in flask
-- [ ] design changelog page ui
-- [ ] add changelog link in navbar
+- [x] create /changelog route in flask
+- [x] design changelog page ui
+- [x] add changelog link in navbar
+
+*done in v2.3.0*
+
+![alt text](ss/image-6.png)
 
 **Calculator fixes**
 - [ ] test all buttons and find broken things
