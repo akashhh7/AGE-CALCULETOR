@@ -44,6 +44,10 @@ def calculator():
         base_modes=calc.BASE_MODES,
         )
 
+@app.route("/changelog")
+def changelog():
+    return render_template("changelog.html")
+
 @app.route("/api/calc", methods=["POST"])
 def api_calc():
     return jsonify(calc.handle(request.get_json(silent=True)or{}))

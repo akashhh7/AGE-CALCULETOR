@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Changelog{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='changelog.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="changelog" data-repo="shuvamm939-glitch/Py-Calculator">
+
+    <header class="topbar">
+        <div class="topbar-title">Changelog</div>
+
+        <div class="topbar-center">
+            <span id="releaseCount"></span>
+            <a class="topbar-commits" id="commitCount" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+
+        <button class="topbar-close" id="btnClose" data-href="{{ url_for('home') }}" aria-label="Close changelog"
+            type="button">
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <aside class="dial-panel" id="dialPanel">
+        <canvas id="dialCanvas" class="dial-canvas"></canvas>
+        <div class="chips-layer" id="chipsLayer"></div>
+
+        <div class="dial-indicator" id="dialIndicator">
+            <span class="pulse"></span>
+        </div>
+
+        <div class="dial-readout" id="dialCounter"></div>
+    </aside>
+
+    <section class="detail-panel">
+        <div class="detail-inner" id="detailInner"></div>
+    </section>
+
+</div>
+
+<script type="module">
+    import { initDial } from "{{ url_for('static', filename='changelog.js') }}";
+    initDial();
+</script>
+{% endblock %}

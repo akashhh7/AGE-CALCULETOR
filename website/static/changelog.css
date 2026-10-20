@@ -1,0 +1,561 @@
+.changelog {
+    --bg: #1d1f21;
+    --panel: #222427;
+    --panel-2: #2a2c2f;
+    --bar: #1a1c1e;
+    --steel-line: #3a3d41;
+    --hair: rgba(255, 255, 255, 0.09);
+    --brass: #e0a526;
+    --brass-bright: #f0c456;
+    --text: #eceef0;
+    --muted: #8b9096;
+    --muted-2: #62666c;
+
+    display: grid;
+    grid-template-columns: minmax(280px, 40%) 1fr;
+    grid-template-rows: 62px 1fr;
+    height: clamp(540px, calc(100vh - 170px), 700px);
+    margin-top: 12px;
+    overflow: hidden;
+    border-radius: 28px;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 24px 48px -24px rgba(30, 34, 30, .45);
+}
+
+/* navbar */
+
+.topbar {
+    grid-column: 1 / -1;
+    grid-row: 1;
+
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+
+    height: 62px;
+    padding: 0 24px;
+
+    background:
+        linear-gradient(180deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.008)),
+        var(--bar);
+
+    border-bottom: 1px solid var(--hair);
+    z-index: 20;
+}
+
+/* metal comp. */
+.topbar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+
+    background: repeating-linear-gradient(100deg,
+            rgba(255, 255, 255, 0.012) 0px,
+            rgba(255, 255, 255, 0.012) 1px,
+            transparent 1px,
+            transparent 4px);
+
+    pointer-events: none;
+}
+
+/*left- */
+
+.topbar-title {
+    position: relative;
+    z-index: 1;
+
+    justify-self: start;
+
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+
+    color: var(--text);
+}
+
+/* middl, */
+
+.topbar-center {
+    position: relative;
+    z-index: 1;
+
+    justify-self: center;
+
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+
+    color: var(--muted);
+}
+
+.topbar-commits {
+    margin-left: 8px;
+    color: var(--muted);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    transition: color 140ms ease;
+}
+
+.topbar-commits:hover {
+    color: var(--text);
+}
+
+/* button close */
+
+.topbar-close {
+    position: relative;
+    z-index: 1;
+
+    justify-self: end;
+
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition:
+        background 140ms ease,
+        border-color 140ms ease,
+        transform 140ms ease;
+}
+
+.topbar-close span {
+    position: absolute;
+
+    width: 14px;
+    height: 1.5px;
+
+    background: var(--muted);
+
+    border-radius: 1px;
+
+    transition:
+        background 140ms ease,
+        width 140ms ease;
+}
+
+.topbar-close span:first-child {
+    transform: rotate(45deg);
+}
+
+.topbar-close span:last-child {
+    transform: rotate(-45deg);
+}
+
+.topbar-close:hover {
+    background: rgba(255, 255, 255, 0.045);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.topbar-close:hover span {
+    width: 16px;
+    background: var(--text);
+}
+
+.topbar-close:active {
+    transform: scale(0.94);
+}
+
+
+/* ... */
+
+.dial-panel {
+    position: relative;
+    background: var(--panel);
+    border-right: 1px solid var(--hair);
+    overflow: hidden;
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.dial-panel::before {
+    /* bg texture */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(100deg,
+            rgba(255, 255, 255, 0.015) 0px,
+            rgba(255, 255, 255, 0.015) 1px,
+            transparent 1px,
+            transparent 3px);
+    pointer-events: none;
+}
+
+.dial-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+.chips-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.chip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translate(var(--x, 0px), calc(var(--y, 0px) - 50%)) scale(var(--scale, 1));
+    opacity: var(--op, 1);
+    transition: opacity 90ms linear;
+    pointer-events: auto;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.chip-leader {
+    width: 34px;
+    height: 1px;
+    visibility: hidden;
+}
+
+.chip.is-active .chip-leader {
+    background: linear-gradient(90deg, transparent, var(--brass));
+    height: 1.5px;
+}
+
+.chip-label {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--muted);
+    padding: 5px 10px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    background: transparent;
+    letter-spacing: 0.01em;
+}
+
+.chip.is-active .chip-label {
+    color: #14110c;
+    background: linear-gradient(180deg, var(--brass-bright), var(--brass));
+    border-color: var(--brass-bright);
+    font-weight: 500;
+    font-size: 17px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 4px 18px -4px rgba(224, 165, 38, 0.55);
+    animation: chip-engage 260ms ease-out;
+}
+
+@keyframes chip-engage {
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.08);
+    }
+
+    60% {
+        transform: scale(0.97);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.dial-indicator {
+    position: absolute;
+    right: 80px;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    transform: translate(50%, -50%);
+    pointer-events: none;
+}
+
+.dial-indicator .pulse {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--brass-bright);
+    opacity: 0;
+}
+
+.dial-indicator.is-settled .pulse {
+    animation: dial-pulse 520ms ease-out;
+}
+
+@keyframes dial-pulse {
+    0% {
+        opacity: 0.9;
+        width: 9px;
+        height: 9px;
+    }
+
+    100% {
+        opacity: 0;
+        width: 64px;
+        height: 64px;
+    }
+}
+
+.dial-readout {
+    position: absolute;
+    left: 28px;
+    bottom: 26px;
+    font-family: var(--sans);
+    color: var(--muted-2);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.dial-readout strong {
+    color: var(--brass);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.dial-hint {
+    position: absolute;
+    left: 28px;
+    top: 26px;
+    font-size: 12px;
+    color: var(--muted-2);
+    letter-spacing: 0.02em;
+    max-width: 180px;
+    line-height: 1.5;
+}
+
+/* content windoww */
+
+.detail-panel {
+    position: relative;
+    padding: 48px 56px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.detail-inner {
+    max-width: 520px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.detail-inner.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.badge-row {
+    min-height: 22px;
+    margin-bottom: 14px;
+}
+
+.badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 4px 9px;
+    border-radius: 3px;
+    border: 1px solid var(--steel-line);
+    color: var(--muted);
+}
+
+.badge--latest {
+    color: #f0f0ec;
+    border-color: rgba(240, 240, 236, 0.28);
+    background: rgba(240, 240, 236, 0.055);
+}
+
+.badge--first {
+    color: #f0f0ec;
+    border-color: rgba(240, 240, 236, 0.28);
+    background: rgba(240, 240, 236, 0.055);
+}
+
+.detail-title {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+    color: var(--text);
+}
+
+.detail-date {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 20px;
+}
+
+.detail-summary {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #c3c6cb;
+    margin: 0 0 28px;
+    max-width: 46ch;
+}
+
+.detail-divider {
+    height: 1px;
+    background: var(--hair);
+    margin-bottom: 26px;
+}
+
+.change {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 9px 0;
+}
+
+.change-tag {
+    flex: none;
+    font-family: var(--sans);
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 3px;
+    border: 1px solid;
+    margin-top: 1px;
+}
+
+.change p {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: #d4d6da;
+}
+
+.nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 34px;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-2);
+    border: 1px solid var(--steel-line);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 9px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.nav-btn:hover {
+    border-color: var(--brass);
+    color: var(--brass-bright);
+    background: rgba(224, 165, 38, 0.06);
+}
+
+.nav-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+@media (max-width: 780px) {
+    .changelog {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 240px auto;
+        height: auto;
+        border-radius: 22px;
+    }
+
+    .topbar {
+        grid-template-columns: 1fr auto;
+    }
+
+    .topbar-title {
+        display: none;
+    }
+
+    .topbar-center {
+        justify-self: start;
+    }
+
+    .topbar {
+        grid-column: 1;
+        grid-row: 1;
+        height: 56px;
+        padding: 0 16px;
+    }
+
+    .dial-panel {
+        grid-column: 1;
+        grid-row: 2;
+
+        border-right: none;
+        border-bottom: 1px solid var(--hair);
+    }
+
+    .detail-panel {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .dial-indicator {
+        right: 50%;
+        top: auto;
+        bottom: 22px;
+        transform: translate(50%, 50%);
+    }
+
+    .dial-indicator .pulse {
+        top: auto;
+        bottom: 0;
+    }
+
+    .detail-panel {
+        padding: 36px 28px 48px;
+    }
+
+    .detail-title {
+        font-size: 26px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .chip,
+    .detail-inner,
+    .nav-btn {
+        transition: none !important;
+    }
+
+    .dial-indicator.is-settled .pulse {
+        animation: none !important;
+    }
+}
