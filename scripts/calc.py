@@ -154,6 +154,8 @@ def prepare(expression):
     # implicit multiplication: 2pi, 3(4), (2)(3)
     expression = re.sub(r"(\d|\))\s*(?=[a-df-z(])", r"\1*", expression)
     expression = re.sub(r"(\))\s*(?=\d)", r"\1*", expression)
+    # close any brackets left open: sin(8 -> sin(8) - bracket bug fix
+    expression += ")" * (expression.count("(") - expression.count(")"))
     return expression
 
 
