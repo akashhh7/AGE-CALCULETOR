@@ -15,8 +15,8 @@
                 <button class="mode" id="mode" type="button" title="Switch between degrees and radians">DEG</button>
                 <span id="memflag"></span>
             </div>
-            <input class="expr" id="expr" type="text" autocomplete="off" spellcheck="false"
-                placeholder="" aria-label="Expression">
+            <input class="expr" id="expr" type="text" autocomplete="off" spellcheck="false" placeholder=""
+                aria-label="Expression">
             <div class="result" id="result" aria-live="polite">0</div>
         </div>
 
@@ -28,19 +28,30 @@
             <select class="key fn small" id="more" aria-label="More functions">
                 <option value="" selected disabled>More</option>
                 <optgroup label="Inverse trig">
-                    <option>asin</option><option>acos</option><option>atan</option>
+                    <option>asin</option>
+                    <option>acos</option>
+                    <option>atan</option>
                 </optgroup>
                 <optgroup label="Hyperbolic">
-                    <option>sinh</option><option>cosh</option><option>tanh</option>
+                    <option>sinh</option>
+                    <option>cosh</option>
+                    <option>tanh</option>
                 </optgroup>
                 <optgroup label="Powers and logs">
-                    <option>cbrt</option><option>exp</option><option>log2</option>
+                    <option>cbrt</option>
+                    <option>exp</option>
+                    <option>log2</option>
                 </optgroup>
                 <optgroup label="Rounding">
-                    <option>round</option><option>floor</option><option>ceil</option>
+                    <option>round</option>
+                    <option>floor</option>
+                    <option>ceil</option>
                 </optgroup>
                 <optgroup label="Counting">
-                    <option>ncr</option><option>npr</option><option>gcd</option><option>lcm</option>
+                    <option>ncr</option>
+                    <option>npr</option>
+                    <option>gcd</option>
+                    <option>lcm</option>
                 </optgroup>
             </select>
         </div>
@@ -115,8 +126,10 @@
                     </select>
                 </div>
                 <div class="pair">
-                    <div class="field"><label for="p-x">X</label><input id="p-x" name="x" type="number" step="any" required></div>
-                    <div class="field"><label for="p-y">Y</label><input id="p-y" name="y" type="number" step="any" required></div>
+                    <div class="field"><label for="p-x">X</label><input id="p-x" name="x" type="number" step="any"
+                            required></div>
+                    <div class="field"><label for="p-y">Y</label><input id="p-y" name="y" type="number" step="any"
+                            required></div>
                 </div>
                 <button class="btn" type="submit">Calculate</button>
                 <div class="tool-out"></div>
@@ -125,7 +138,8 @@
             <form class="tool-form" data-tool="stats" hidden>
                 <div class="field">
                     <label for="s-nums">Numbers</label>
-                    <textarea id="s-nums" name="numbers" rows="3" placeholder="4, 8, 15, 16, 23, 42" required></textarea>
+                    <textarea id="s-nums" name="numbers" rows="3" placeholder="4, 8, 15, 16, 23, 42"
+                        required></textarea>
                 </div>
                 <button class="btn" type="submit">Summarise</button>
                 <div class="tool-out"></div>
@@ -182,121 +196,136 @@
 </div>
 
 <script>
-(() => {
-    const $ = (id) => document.getElementById(id);
-    const expr = $("expr"), out = $("result");
-    let mode = "DEG", ans = 0, memory = 0, solved = false;
+    (() => {
+        const $ = (id) => document.getElementById(id);
+        const expr = $("expr"), out = $("result");
+        let mode = "DEG", ans = 0, memory = 0, solved = false;
 
-    const post = (body) =>
-        fetch("/api/calc", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-        })
-            .then((r) => r.json())
-            .catch(() => ({ ok: false, error: "Could not reach the server." }));
+        const post = (body) =>
+            fetch("/api/calc", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            })
+                .then((r) => r.json())
+                .catch(() => ({ ok: false, error: "Could not reach the server." }));
 
-    const show = (text, isError) => {
-        out.textContent = text;
-        out.classList.toggle("err", Boolean(isError));
-    };
+        const show = (text, isError) => {
+            out.textContent = text;
+            out.classList.toggle("err", Boolean(isError));
+        };
 
-    const insert = (text, isOp) => {
-        if (solved) {
-            expr.value = isOp ? "ans" : "";
+        const insert = (text, isOp) => {
+            if (solved) {
+                expr.value = isOp ? "ans" : "";
+                solved = false;
+            }
+            expr.value += text;
+        };
+
+        const showMemory = () => {
+            $("memflag").textContent = memory ? "M = " + Number(memory.toPrecision(10)) : "";
+        };
+
+        const addHistory = (text, result) => {
+            const li = document.createElement("li");
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.innerHTML = "<span></span><b></b>";
+            btn.children[0].textContent = text;
+            btn.children[1].textContent = result;
+            btn.addEventListener("click", () => { expr.value = text; solved = false; });
+            li.append(btn);
+            $("history").prepend(li);
+            while ($("history").children.length > 30) $("history").lastChild.remove();
+            $("history-empty").hidden = true;
+        };
+
+        const solve = async () => {
+            const text = expr.value.trim();
+            if (!text) return;
+            const r = await post({ op: "expr", expression: text, mode, ans, memory });
+            if (!r.ok) return show(r.error, true);
+            show(r.text);
+            ans = r.value;
+            solved = true;
+            addHistory(text, r.text);
+        };
+
+        // backspace removes a whole token like "sin(" so that we avoid cases like sin8 throwing error
+        const TOKEN = /(?:[a-z]+\(|ans|pi)$/;
+        const backspace = () => {
+            const v = expr.value;
+            expr.value = TOKEN.test(v) ? v.replace(TOKEN, "") : v.slice(0, -1);
             solved = false;
-        }
-        expr.value += text;
-    };
+        };
 
-    const showMemory = () => {
-        $("memflag").textContent = memory ? "M = " + Number(memory.toPrecision(10)) : "";
-    };
+        const actions = {
+            clear: () => { expr.value = ""; solved = false; show("0"); },
+            delete: backspace,
+            equals: solve,
+            mc: () => { memory = 0; showMemory(); },
+            mr: () => insert("m"),
+            mplus: () => { memory += ans; showMemory(); },
+            mminus: () => { memory -= ans; showMemory(); },
+        };
 
-    const addHistory = (text, result) => {
-        const li = document.createElement("li");
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerHTML = "<span></span><b></b>";
-        btn.children[0].textContent = text;
-        btn.children[1].textContent = result;
-        btn.addEventListener("click", () => { expr.value = text; solved = false; });
-        li.append(btn);
-        $("history").prepend(li);
-        while ($("history").children.length > 30) $("history").lastChild.remove();
-        $("history-empty").hidden = true;
-    };
+        document.querySelectorAll(".keys button.key").forEach((key) =>
+            key.addEventListener("click", () => {
+                if (key.dataset.act) actions[key.dataset.act]();
+                else insert(key.dataset.key, key.hasAttribute("data-op"));
+            })
+        );
 
-    const solve = async () => {
-        const text = expr.value.trim();
-        if (!text) return;
-        const r = await post({ op: "expr", expression: text, mode, ans, memory });
-        if (!r.ok) return show(r.error, true);
-        show(r.text);
-        ans = r.value;
-        solved = true;
-        addHistory(text, r.text);
-    };
+        expr.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") solve();
+            const atEnd = expr.selectionStart === expr.value.length && expr.selectionEnd === expr.value.length;
+            if (e.key === "Backspace" && atEnd && TOKEN.test(expr.value)) {
+                e.preventDefault();
+                backspace();
+            }
+        });
+        expr.addEventListener("input", () => { solved = false; });
 
-    const actions = {
-        clear: () => { expr.value = ""; solved = false; show("0"); },
-        delete: () => { expr.value = expr.value.slice(0, -1); },
-        equals: solve,
-        mc: () => { memory = 0; showMemory(); },
-        mr: () => insert("m"),
-        mplus: () => { memory += ans; showMemory(); },
-        mminus: () => { memory -= ans; showMemory(); },
-    };
+        $("mode").addEventListener("click", (e) => {
+            mode = mode === "DEG" ? "RAD" : "DEG";
+            e.currentTarget.textContent = mode;
+        });
 
-    document.querySelectorAll(".keys button.key").forEach((key) =>
-        key.addEventListener("click", () => {
-            if (key.dataset.act) actions[key.dataset.act]();
-            else insert(key.dataset.key, key.hasAttribute("data-op"));
-        })
-    );
+        $("more").addEventListener("change", (e) => {
+            insert(e.target.value + "(");
+            e.target.selectedIndex = 0;
+        });
 
-    expr.addEventListener("keydown", (e) => { if (e.key === "Enter") solve(); });
-    expr.addEventListener("input", () => { solved = false; });
+        $("clear-history").addEventListener("click", () => {
+            $("history").innerHTML = "";
+            $("history-empty").hidden = false;
+        });
 
-    $("mode").addEventListener("click", (e) => {
-        mode = mode === "DEG" ? "RAD" : "DEG";
-        e.currentTarget.textContent = mode;
-    });
+        const forms = document.querySelectorAll("form[data-tool]");
+        $("tool").addEventListener("change", (e) =>
+            forms.forEach((f) => { f.hidden = f.dataset.tool !== e.target.value; })
+        );
 
-    $("more").addEventListener("change", (e) => {
-        insert(e.target.value + "(");
-        e.target.selectedIndex = 0;
-    });
-
-    $("clear-history").addEventListener("click", () => {
-        $("history").innerHTML = "";
-        $("history-empty").hidden = false;
-    });
-
-    const forms = document.querySelectorAll("form[data-tool]");
-    $("tool").addEventListener("change", (e) =>
-        forms.forEach((f) => { f.hidden = f.dataset.tool !== e.target.value; })
-    );
-
-    forms.forEach((form) =>
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const body = Object.fromEntries(new FormData(form));
-            body.op = form.dataset.tool;
-            const r = await post(body);
-            const box = form.querySelector(".tool-out");
-            box.replaceChildren();
-            box.classList.toggle("err", !r.ok);
-            if (!r.ok) { box.textContent = r.error; return; }
-            r.lines.forEach(([label, value]) => {
-                const row = document.createElement("div");
-                row.innerHTML = "<span></span><b></b>";
-                row.children[0].textContent = label;
-                row.children[1].textContent = value;
-                box.append(row);
-            });
-        })
-    );
-})();
+        forms.forEach((form) =>
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const body = Object.fromEntries(new FormData(form));
+                body.op = form.dataset.tool;
+                const r = await post(body);
+                const box = form.querySelector(".tool-out");
+                box.replaceChildren();
+                box.classList.toggle("err", !r.ok);
+                if (!r.ok) { box.textContent = r.error; return; }
+                r.lines.forEach(([label, value]) => {
+                    const row = document.createElement("div");
+                    row.innerHTML = "<span></span><b></b>";
+                    row.children[0].textContent = label;
+                    row.children[1].textContent = value;
+                    box.append(row);
+                });
+            })
+        );
+    })();
 </script>
 {% endblock %}
