@@ -1,6 +1,15 @@
 const releases = [
     {
-        version: 'v2.3.0', name: 'Changelog UI', date: 'Oct 2026', status: 'latest',
+        version: 'v2.3.1', name: 'Patch Update', date: 'Oct 2026', status: 'latest',
+        summary: 'Sci Calc bugs fix',
+        changes: [
+            { type: 'fix', text: 'More button bug' },
+            { type: 'fix', text: 'Bracket close bug' },
+            { type: 'fix', text: 'Few ui tweaks' },
+        ],
+    },
+    {
+        version: 'v2.3.0', name: 'Changelog UI', date: 'Oct 2026', status: 'null',
         summary: 'Changelog dial component!',
         changes: [
             { type: 'new', text: 'New changelog page' },
