@@ -52,13 +52,8 @@ A collaborative project featuring a collection of Python-powered calculation too
 - [ ] design both buttons to match the ui
 
 **Bracket bug**
-- [ ] find why brackets give wrong result
-- [ ] fix bracket handling in calc script
-- [ ] test with cases like sin(5),sin 5
-
-
-![image-2](ss/image-2.png)
-![image-3](ss/image-3.png)
+- [x] bracket bug
+- [x] more button bug
 
 
 (phase 3 bugs we gonna fix)
