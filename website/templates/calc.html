@@ -248,7 +248,7 @@
         mminus: () => { memory -= ans; showMemory(); },
     };
 
-    document.querySelectorAll(".keys .key").forEach((key) =>
+    document.querySelectorAll(".keys button.key").forEach((key) =>
         key.addEventListener("click", () => {
             if (key.dataset.act) actions[key.dataset.act]();
             else insert(key.dataset.key, key.hasAttribute("data-op"));
