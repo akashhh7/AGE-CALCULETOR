@@ -12,14 +12,14 @@ try {
     }
 
     const dataSection = fileContent.substring(startIndex);
-    const arrayMatch = dataSection.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+    const arrayMatch = dataSection.match(/\[[\s\S]*?\n\]\s*;/);
 
     if (!arrayMatch) {
         console.error("could not extract valid array block structure from releases data.");
         process.exit(1);
     }
 
-    const releases = eval(arrayMatch[0]);
+    const releases = eval(arrayMatch[0].replace(/;\s*$/, ''));
     if (!releases || releases.length === 0) {
         console.error("The releases data structure appears to be empty.");
         process.exit(1);
