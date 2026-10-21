@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const filePath = path.join(__dirname, '../../../website/static/changelog.js');
+const filePath = path.join(process.cwd(), 'website/static/changelog.js');
 
 try {
     const fileContent = fs.readFileSync(filePath, 'utf8');
