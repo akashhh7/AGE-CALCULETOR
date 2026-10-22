@@ -23,7 +23,7 @@ const releases = [
             { type: 'new', text: 'New ui for scientific calc page integrated with its python script' },
         ],
     },
-    
+
     {
         version: 'v2.1.0', name: 'Whole website rewrite', date: 'Oct 2026', status: null,
         summary: 'A fresh look for the whole site',
@@ -56,16 +56,16 @@ const releases = [
 ];
 
 const tagStyle = {
-    new: { label: 'New', color: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.25)' },
-    fix: { label: 'Fix', color: '#60a5fa', bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.25)' },
-    wip: { label: 'WIP', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)' },
+    new: { label: 'New', color: 'var(--tag-new)', bg: 'var(--tag-new-bg)', border: 'var(--tag-new-border)' },
+    fix: { label: 'Fix', color: 'var(--tag-fix)', bg: 'var(--tag-fix-bg)', border: 'var(--tag-fix-border)' },
+    wip: { label: 'WIP', color: 'var(--tag-wip)', bg: 'var(--tag-wip-bg)', border: 'var(--tag-wip-border)' },
 };
 
 const GAP = 108;
 const VISIBLE_SPAN = 4.4;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let panelEl, canvasEl, ctx, chipsLayer, indicatorEl, detailInner, counterEl, dpr;
+let panelEl, canvasEl, ctx, chipsLayer, indicatorEl, detailInner, dpr;
 let R = 640, cx = 0, cy = 0;
 let pos = 0, vel = 0, dest = 0, cur = 0;
 let pulsed = false;
@@ -100,6 +100,16 @@ function pointFor(i, step) {
     return { x: cx + Math.cos(ang) * R, y: cy + Math.sin(ang) * R, ang };
 }
 
+
+let lineRgb = '255,255,255';
+let activeRgb = '240,196,86';
+
+function readTheme() {
+    const styles = getComputedStyle(document.querySelector('.changelog'));
+    lineRgb = styles.getPropertyValue('--dial-rgb').trim() || lineRgb;
+    activeRgb = styles.getPropertyValue('--dial-active-rgb').trim() || activeRgb;
+}
+
 function draw() {
     const w = canvasEl.width / dpr;
     const h = canvasEl.height / dpr;
@@ -115,9 +125,9 @@ function draw() {
         const y0 = cy - R, y1 = cy + R;
         const grad = ctx.createLinearGradient(0, Math.max(-50, y0), 0, Math.min(h + 50, y1));
         const t = clamp((sweepY - y0) / (y1 - y0), 0, 1);
-        grad.addColorStop(Math.max(0, t - 0.22), `rgba(255,255,255,${baseAlpha})`);
-        grad.addColorStop(t, `rgba(255,255,255,${glintAlpha})`);
-        grad.addColorStop(Math.min(1, t + 0.22), `rgba(255,255,255,${baseAlpha})`);
+        grad.addColorStop(Math.max(0, t - 0.22), `rgba(${lineRgb},${baseAlpha})`);
+        grad.addColorStop(t, `rgba(${lineRgb},${glintAlpha})`);
+        grad.addColorStop(Math.min(1, t + 0.22), `rgba(${lineRgb},${baseAlpha})`);
         ctx.beginPath();
         ctx.arc(cx, cy, radius, Math.PI - span, Math.PI + span);
         ctx.strokeStyle = grad;
@@ -142,7 +152,7 @@ function draw() {
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
-        ctx.strokeStyle = `rgba(255,255,255,${0.08 + glint * 0.5})`;
+        ctx.strokeStyle = `rgba(${lineRgb},${0.08 + glint * 0.5})`;
         ctx.lineWidth = 1;
         ctx.stroke();
     }
@@ -168,7 +178,7 @@ function draw() {
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
-            ctx.strokeStyle = 'rgba(240,196,86,0.95)';
+            ctx.strokeStyle = `rgba(${activeRgb},0.95)`;
             ctx.lineWidth = 2;
             ctx.stroke();
         }
@@ -180,7 +190,7 @@ function draw() {
             ctx.beginPath();
             ctx.moveTo(mx1, my1);
             ctx.lineTo(mx2, my2);
-            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.strokeStyle = `rgba(${lineRgb},0.05)`;
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -307,7 +317,7 @@ function renderDetail(idx) {
         requestAnimationFrame(() => detailInner.classList.add('is-visible'));
     }, reduceMotion ? 0 : 130);
 
-    counterEl.innerHTML = `<strong>${String(idx + 1).padStart(2, '0')}</strong> / ${String(releases.length).padStart(2, '0')}`;
+
 }
 
 function snapTo(n) {
@@ -353,12 +363,12 @@ function onKeydown(e) {
 }
 
 export function initDial() {
+    readTheme();
     panelEl = document.getElementById('dialPanel');
     canvasEl = document.getElementById('dialCanvas');
     chipsLayer = document.getElementById('chipsLayer');
     indicatorEl = document.getElementById('dialIndicator');
     detailInner = document.getElementById('detailInner');
-    counterEl = document.getElementById('dialCounter');
 
     // top bar
     const releaseCountEl = document.getElementById('releaseCount');
@@ -433,6 +443,8 @@ export function initDial() {
     renderDetail(cur);
     requestAnimationFrame(() => detailInner.classList.add('is-visible'));
 
+    new MutationObserver(() => { readTheme(); draw(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     window.addEventListener('resize', fit);
     panelEl.addEventListener('wheel', onWheel, { passive: false });

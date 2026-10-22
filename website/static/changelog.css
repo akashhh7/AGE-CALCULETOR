@@ -559,3 +559,65 @@
         animation: none !important;
     }
 }
+
+
+/* for light mode */
+.changelog {
+    --dial-rgb: 255, 255, 255;
+    --dial-active-rgb: 240, 196, 86;
+    --tag-new: #4ade80;
+    --tag-new-bg: rgba(74, 222, 128, 0.08);
+    --tag-new-border: rgba(74, 222, 128, 0.25);
+    --tag-fix: #60a5fa;
+    --tag-fix-bg: rgba(96, 165, 250, 0.08);
+    --tag-fix-border: rgba(96, 165, 250, 0.25);
+    --tag-wip: #fbbf24;
+    --tag-wip-bg: rgba(251, 191, 36, 0.08);
+    --tag-wip-border: rgba(251, 191, 36, 0.25);
+}
+
+html:not([data-theme="dark"]) .changelog {
+    --bg: #eceeea;
+    --panel: #e4e7e1;
+    --panel-2: #f6f7f3;
+    --bar: #e4e7e1;
+    --steel-line: #c5c9c1;
+    --hair: rgba(0, 0, 0, 0.1);
+    --brass: #b8820f;
+    --brass-bright: #e9b73c;
+    --text: #1c1d1f;
+    --muted: #62676a;
+    --muted-2: #868a8d;
+    --dial-rgb: 28, 29, 31;
+    --dial-active-rgb: 184, 130, 15;
+    --tag-new: #15803d;
+    --tag-new-bg: rgba(21, 128, 61, 0.08);
+    --tag-new-border: rgba(21, 128, 61, 0.3);
+    --tag-fix: #1d4ed8;
+    --tag-fix-bg: rgba(29, 78, 216, 0.07);
+    --tag-fix-border: rgba(29, 78, 216, 0.28);
+    --tag-wip: #a16207;
+    --tag-wip-bg: rgba(161, 98, 7, 0.08);
+    --tag-wip-border: rgba(161, 98, 7, 0.3);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .07), 0 24px 48px -24px rgba(30, 34, 30, .35);
+}
+
+html:not([data-theme="dark"]) .changelog .topbar-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html:not([data-theme="dark"]) .changelog .badge--latest,
+html:not([data-theme="dark"]) .changelog .badge--first {
+    color: var(--text);
+    border-color: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+html:not([data-theme="dark"]) .changelog .detail-summary {
+    color: #4a4e52;
+}
+
+html:not([data-theme="dark"]) .changelog .change p {
+    color: #34373a;
+}
