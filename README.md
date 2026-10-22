@@ -43,13 +43,14 @@ A collaborative project featuring a collection of Python-powered calculation too
 
 ![alt text](ss/image-6.png)
 
-**Calculator fixes**
-- [ ] test all buttons and find broken things
-- [ ] fix the broken things
+**new features**
+- [x] dark mode
 
-**Add more buttons**
-- [ ] add more buttons
-- [ ] design both buttons to match the ui
+![alt text](ss/image-7.png)
+
+- [x] light mode in changelog
+
+![alt text](ss/image-8.png)
 
 **Bracket bug**
 - [x] bracket bug
