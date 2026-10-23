@@ -71,6 +71,68 @@
             {% block content %}{% endblock %}
         </main>
 
+        <footer class="site-foot device">
+            <div class="foot-main">
+                <div class="foot-links">
+                    <nav class="foot-col" aria-label="Pages">
+                        <h3>Explore</h3>
+                        <ul>
+                            <li><a href="{{ url_for('home') }}">Home</a></li>
+                            <li><a href="{{ url_for('age_calculator') }}">Age calculator</a></li>
+                            <li><a href="{{ url_for('calculator') }}">Scientific calculator</a></li>
+                            <li><a href="{{ url_for('changelog') }}">Changelog</a></li>
+                        </ul>
+                    </nav>
+                    <nav class="foot-col" aria-label="Project">
+                        <h3>Project</h3>
+                        <ul>
+                            <li><a href="https://github.com/{{ repo }}" target="_blank" rel="noopener noreferrer">Source
+                                    on GitHub</a></li>
+                            <li><a href="https://github.com/{{ repo }}/issues/new?labels=bug" target="_blank"
+                                    rel="noopener noreferrer">Report a bug</a></li>
+                            <li><a href="https://github.com/{{ repo }}/issues/new?labels=enhancement" target="_blank"
+                                    rel="noopener noreferrer">Suggest a feature</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                {% if languages or deps %}
+                <div class="foot-code">
+                    {% if languages %}
+                    <div class="foot-code-head"><h3>Codebase</h3><span><a href="https://github.com/{{ repo }}" target="_blank" rel="noopener noreferrer">From GitHub</a></span></div>
+                    <div class="lang-bar" role="img" aria-label="Languages: {% for l in languages %}{{ l.name }} {{ l.label }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                        {% for l in languages %}<span style="width: {{ '%.2f'|format(l.pct) }}%; background: {{ l.color }}"></span>{% endfor %}
+                    </div>
+                    <ul class="lang-legend">
+                        {% for l in languages %}<li><i style="background: {{ l.color }}"></i>{{ l.name }} <b>{{ l.label }}</b></li>{% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if deps %}
+                    <h3 class="deps-title">Dependencies</h3>
+                    <ul class="stack">
+                        {% for d in deps %}<li>{{ d.name }}{% if d.version %}<small>{{ d.version }}</small>{% endif %}</li>{% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="foot-people">
+                <h3>Built by</h3>
+                <a class="person" href="https://github.com/shuvamm939-glitch" target="_blank" rel="noopener noreferrer">
+                    <img src="https://github.com/shuvamm939-glitch.png?size=96" alt="" width="48" height="48"
+                        loading="lazy">
+                    <span><b>shuvamm939-glitch</b><small>Python scripts</small></span>
+                </a>
+                <a class="person" href="https://github.com/thunderzz12" target="_blank" rel="noopener noreferrer">
+                    <img src="https://github.com/thunderzz12.png?size=96" alt="" width="48" height="48" loading="lazy">
+                    <span><b>thunderzz12</b><small>UI and website</small></span>
+                </a>
+
+            </div>
+        </footer>
+
     </div>
 
     <script>
