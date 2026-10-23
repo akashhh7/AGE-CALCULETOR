@@ -1,6 +1,16 @@
 const releases = [
     {
-        version: 'v2.3.1', name: 'Patch Update', date: 'Oct 2026', status: 'latest',
+        version: 'v2.4.0', name: 'Dark Mode & Footer', date: 'Oct 2026', status: 'latest',
+        summary: 'new feats',
+        changes: [
+            { type: 'new', text: 'Dark Mode for whole website' },
+            { type: 'new', text: 'Light mode for changelog' },
+            { type: 'new', text: 'New footer with new links' },
+            { type: 'new', text: 'Codebase languages and dependencies fetch from repo in footer'},
+        ],
+    },
+    {
+        version: 'v2.3.1', name: 'Patch Update', date: 'Oct 2026', status: 'null',
         summary: 'Sci Calc bugs fix',
         changes: [
             { type: 'fix', text: 'More button bug' },

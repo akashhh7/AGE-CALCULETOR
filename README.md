@@ -52,6 +52,10 @@ A collaborative project featuring a collection of Python-powered calculation too
 
 ![alt text](ss/image-8.png)
 
+- [x] footer
+
+![alt text](ss/image-9.png)
+
 **Bracket bug**
 - [x] bracket bug
 - [x] more button bug
